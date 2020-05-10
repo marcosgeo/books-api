@@ -5,9 +5,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
+	"database/sql"
+
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
+	"github.com/subosito/gotenv"
 )
 
 // Book represents a book
@@ -20,7 +25,32 @@ type Book struct {
 
 var books []Book
 
+func init() {
+	gotenv.Load()
+}
+
+func logFatal(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 func main() {
+
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PW"),
+		os.Getenv("DB_URL"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_NAME"),
+	)
+	db, err := sql.Open("postgres", connStr)
+	logFatal(err)
+
+	result, r := db.Exec("select 1+1;")
+	logFatal(r)
+	fmt.Println(result)
+
 	router := mux.NewRouter()
 	books = append(books,
 		Book{ID: 1, Title: "Golang pointers", Author: "Mr. Golang", Year: "2010"},
