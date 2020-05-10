@@ -5,16 +5,14 @@ import (
 )
 
 func createTable(db *sql.DB) sql.Result {
-	query := "create table books (id serial, title varchar, author varchar, year varchar);"
+	query := "create table if not exists books (id serial, title varchar, author varchar, year varchar);"
 
 	result, err := db.Exec(query)
-	if err != nil {
-		panic(err)
-	}
+	logFatal(err) // implemented in main.go
 	return result
 }
 
-func insertData(db *sql.DB) sql.Result {
+func insertData(db *sql.DB) bool {
 	query := `
 		insert into books (title, author, year) values ('Golang is great', 'Mr. Great', '2012');
 		insert into books (title, author, year) values ('Golang is magnific', 'Mr. Magnific', '2013');
@@ -22,10 +20,17 @@ func insertData(db *sql.DB) sql.Result {
 		insert into books (title, author, year) values ('Memórias póstumas de Bráz Cubas', 'Machado de Assis', '1878');
 		insert into books (title, author, year) values ('O ultimo dos justos', 'Andre Schwart-Bart', '1960');
 	`
-
-	result, err := db.Exec(query)
-	if err != nil {
-		panic(err)
+	rows, _ := db.Query("select count(*) from books;")
+	defer rows.Close()
+	var count int
+	// count the number of rows
+	for rows.Next() {
+		rows.Scan(&count)
 	}
-	return result
+
+	if count == 0 {
+		_, err := db.Exec(query)
+		logFatal(err) // implemented in main.go
+	}
+	return true
 }
