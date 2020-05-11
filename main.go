@@ -11,7 +11,7 @@ import (
 	"database/sql"
 
 	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" //only the driver is usede. none of the package's exported names are visible.
 	"github.com/subosito/gotenv"
 )
 
@@ -61,8 +61,8 @@ func main() {
 	router.HandleFunc("/books", updateBook).Methods("PUT")
 	router.HandleFunc("/books/{id}", removeBook).Methods("DELETE")
 
+	fmt.Println("Server running at port 8000")
 	log.Fatal(http.ListenAndServe(":8000", router))
-	fmt.Println("Server running...")
 }
 
 func getBooks(w http.ResponseWriter, r *http.Request) {
