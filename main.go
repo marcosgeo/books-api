@@ -1,30 +1,20 @@
 package main
 
 import (
+	"books-api/driver"
+	"books-api/models"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 
-	"database/sql"
-
 	"github.com/gorilla/mux"
-	_ "github.com/lib/pq" //only the driver is usede. none of the package's exported names are visible.
 	"github.com/subosito/gotenv"
 )
 
-// Book represents a book
-type Book struct {
-	ID     int    `json:"id"`
-	Title  string `json:"title"`
-	Author string `json:"author"`
-	Year   string `json:"year"`
-}
-
-var db *sql.DB
-var books []Book
+var books []models.Book
+var db = driver.ConnectDB()
 
 func init() {
 	gotenv.Load()
@@ -37,21 +27,7 @@ func logFatal(err error) {
 }
 
 func main() {
-
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PW"),
-		os.Getenv("DB_URL"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_NAME"),
-	)
-
-	var err error
-	db, err = sql.Open("postgres", connStr)
-	logFatal(err)
-
-	createTable(db)
-	insertData(db)
+	driver.ConnectDB()
 
 	router := mux.NewRouter()
 
@@ -66,8 +42,8 @@ func main() {
 }
 
 func getBooks(w http.ResponseWriter, r *http.Request) {
-	var book Book
-	books = []Book{}
+	var book models.Book
+	books = []models.Book{}
 
 	rows, err := db.Query("select id, title, author, year from books;")
 	logFatal(err)
@@ -87,7 +63,7 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, _ := strconv.Atoi(params["id"])
 
-	var book Book
+	var book models.Book
 	rows := db.QueryRow("select id, title, author, year from books where id= $1", id)
 
 	err := rows.Scan(&book.ID, &book.Title, &book.Author, &book.Year)
@@ -97,7 +73,7 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 }
 
 func addBook(w http.ResponseWriter, r *http.Request) {
-	var book Book
+	var book models.Book
 	var bookID int
 
 	json.NewDecoder(r.Body).Decode(&book)
@@ -111,7 +87,7 @@ func addBook(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateBook(w http.ResponseWriter, r *http.Request) {
-	var book Book
+	var book models.Book
 
 	json.NewDecoder(r.Body).Decode(&book)
 
