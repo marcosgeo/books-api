@@ -1,6 +1,7 @@
 package main
 
 import (
+	"books-api/controllers"
 	"books-api/driver"
 	"books-api/models"
 	"encoding/json"
@@ -28,48 +29,17 @@ func logFatal(err error) {
 
 func main() {
 	driver.ConnectDB()
-
+	controller := controllers.Controller{}
 	router := mux.NewRouter()
 
-	router.HandleFunc("/books", getBooks).Methods("GET")
-	router.HandleFunc("/books/{id}", getBook).Methods("GET")
+	router.HandleFunc("/books", controller.GetBooks(db)).Methods("GET")
+	//router.HandleFunc("/books/{id}", getBook).Methods("GET")
 	router.HandleFunc("/books", addBook).Methods("POST")
 	router.HandleFunc("/books", updateBook).Methods("PUT")
 	router.HandleFunc("/books/{id}", removeBook).Methods("DELETE")
 
 	fmt.Println("Server running at port 8000")
 	log.Fatal(http.ListenAndServe(":8000", router))
-}
-
-func getBooks(w http.ResponseWriter, r *http.Request) {
-	var book models.Book
-	books = []models.Book{}
-
-	rows, err := db.Query("select id, title, author, year from books;")
-	logFatal(err)
-
-	defer rows.Close()
-	for rows.Next() {
-		err := rows.Scan(&book.ID, &book.Title, &book.Author, &book.Year)
-		logFatal(err)
-
-		books = append(books, book)
-	}
-
-	json.NewEncoder(w).Encode(books)
-}
-
-func getBook(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
-
-	var book models.Book
-	rows := db.QueryRow("select id, title, author, year from books where id= $1", id)
-
-	err := rows.Scan(&book.ID, &book.Title, &book.Author, &book.Year)
-	logFatal(err)
-
-	json.NewEncoder(w).Encode(book)
 }
 
 func addBook(w http.ResponseWriter, r *http.Request) {
