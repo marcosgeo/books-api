@@ -24,13 +24,13 @@ func ConnectDB() *sql.DB {
 	db, err = sql.Open("postgres", connStr)
 	logFatal(err)
 
-	createTable(db)
-	insertData(db)
+	createTable()
+	insertData()
 
 	return db
 }
 
-func createTable(db *sql.DB) sql.Result {
+func createTable() sql.Result {
 	query := "create table if not exists books (id serial, title varchar, author varchar, year varchar);"
 
 	result, err := db.Exec(query)
@@ -38,7 +38,7 @@ func createTable(db *sql.DB) sql.Result {
 	return result
 }
 
-func insertData(db *sql.DB) bool {
+func insertData() bool {
 	query := `
 		insert into books (title, author, year) values ('Golang is great', 'Mr. Great', '2012');
 		insert into books (title, author, year) values ('Golang is magnific', 'Mr. Magnific', '2013');
@@ -63,6 +63,6 @@ func insertData(db *sql.DB) bool {
 
 func logFatal(err error) {
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 }
