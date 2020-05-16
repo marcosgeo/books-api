@@ -4,6 +4,7 @@ import (
 	"books-api/controllers"
 	"books-api/driver"
 	"books-api/models"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -15,7 +16,7 @@ import (
 )
 
 var books []models.Book
-var db = driver.ConnectDB()
+var db *sql.DB
 
 func init() {
 	gotenv.Load()
@@ -28,12 +29,12 @@ func logFatal(err error) {
 }
 
 func main() {
-	driver.ConnectDB()
+	db = driver.ConnectDB()
 	controller := controllers.Controller{}
 	router := mux.NewRouter()
 
 	router.HandleFunc("/books", controller.GetBooks(db)).Methods("GET")
-	//router.HandleFunc("/books/{id}", getBook).Methods("GET")
+	router.HandleFunc("/books/{id}", controller.GetBook(db)).Methods("GET")
 	router.HandleFunc("/books", addBook).Methods("POST")
 	router.HandleFunc("/books", updateBook).Methods("PUT")
 	router.HandleFunc("/books/{id}", removeBook).Methods("DELETE")
