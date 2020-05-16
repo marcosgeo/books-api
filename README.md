@@ -10,4 +10,5 @@ rest api to search books
 5. go-modules (cmd: go mod init bools-api; go build && ./books-api)
 6. refactor_1: models and driver
 7. refactor_2: adding controllers, getBooks moved to GetBooks in controllers package
+8. refactor_3: adding repository to interactions with database
 
