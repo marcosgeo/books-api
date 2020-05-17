@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-// BookRepository represents a book in the database
+// BookRepository contains methods to interact with the database
 type BookRepository struct{}
 
 // GetBooks returns a list o books
@@ -39,6 +39,56 @@ func (b BookRepository) GetBook(db *sql.DB, book models.Book, id int) (models.Bo
 	return book, err
 }
 
+// AddBook inserts a book into table
+func (b BookRepository) AddBook(db *sql.DB, book models.Book) (int, error) {
+	err := db.QueryRow(`insert into books (title, author, year)
+		values ($1, $2, $3) returning id;`,
+		book.Title, book.Author, book.Year).Scan(&book.ID)
+
+	if err != nil {
+		log.Println(err)
+		return 0, err
+
+	}
+
+	return book.ID, nil
+}
+
+// UpdateBook updates a existing book
+func (b BookRepository) UpdateBook(db *sql.DB, book models.Book) (int64, error) {
+	result, err := db.Exec(`update books
+		set title=$1, author=$2, year=$3 where id=$4 returning id;`,
+		&book.Title, &book.Author, &book.Year, &book.ID)
+
+	if err != nil {
+		return 0, err
+	}
+
+	rowsUpdated, err := result.RowsAffected()
+	if err != nil {
+		log.Println(err)
+		return 0, err
+	}
+
+	return rowsUpdated, nil
+}
+
+// RemoveBook deletes a book from database
+func (b BookRepository) RemoveBook(db *sql.DB, id int) (int64, error) {
+	result, err := db.Exec("delete from books where id = $1", id)
+
+	if err != nil {
+		return 0, nil
+	}
+
+	rowsDeleted, err := result.RowsAffected()
+
+	if err != nil {
+		return 0, err
+	}
+
+	return rowsDeleted, nil
+}
 func logFatal(err error) {
 	if err != nil {
 		log.Println(err)
