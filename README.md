@@ -12,3 +12,6 @@ rest api to search books
 7. refactor_2: adding controllers, getBooks moved to GetBooks in controllers package
 8. refactor_3: adding repository to interactions with database
 9. refactor_4: getBook method refactored to controller and repository
+
+----
+a course, Golang: Intro to REST APIs with Go, on udemy by Mike M
